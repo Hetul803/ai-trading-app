@@ -1,37 +1,128 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AI Trading Strategy Generator</title>
+  <script src="https://unpkg.com/userbase-js"></script>
   <style>
     body {
-      font-family: sans-serif;
-      padding: 20px;
-      background: #f4f4f4;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #eef2f3;
+      padding: 40px;
+      color: #333;
+      max-width: 800px;
+      margin: auto;
     }
+
+    h1, h2, h3 {
+      color: #2c3e50;
+    }
+
     input, textarea, button {
       margin: 10px 0;
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
     }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
     .output {
       background: white;
-      padding: 10px;
+      padding: 20px;
       border-radius: 8px;
+      box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
+      white-space: pre-wrap;
+    }
+
+    .section {
+      margin-bottom: 40px;
+    }
+
+    .hidden {
+      display: none;
     }
   </style>
 </head>
 <body>
-  <h1>📈 AI Trading Strategy Generator</h1>
-  <p>Describe your strategy idea:</p>
-  <textarea id="prompt" rows="5" placeholder="e.g. A swing trading strategy using RSI and MACD..."></textarea>
-  <button onclick="generate()">Generate Strategy Code</button>
-  <h3>🧠 Generated Strategy:</h3>
-  <pre class="output" id="result"></pre>
 
+  <!-- 🔐 Login / Signup Section -->
+  <div id="auth-section" class="section">
+    <h2>Login or Sign Up</h2>
+    <input id="username" placeholder="Username" />
+    <input id="password" type="password" placeholder="Password" />
+    <button onclick="signUp(username.value, password.value)">Sign Up</button>
+    <button onclick="login(username.value, password.value)">Log In</button>
+  </div>
+
+  <!-- 🎯 App Section -->
+  <div id="app-section" class="section hidden">
+    <h1>📈 AI Trading Strategy Generator</h1>
+    <button onclick="logout()">Logout</button>
+
+    <p>Describe your strategy idea:</p>
+    <textarea id="prompt" rows="5" placeholder="e.g. I have $100, I want a strategy to grow it using safe trading with 3 stocks..."></textarea>
+    <button onclick="generate()">Generate Strategy</button>
+
+    <h3>🧠 Suggested Strategy:</h3>
+    <pre class="output" id="result"></pre>
+  </div>
+
+  <!-- ⚙️ Scripts -->
   <script>
+    // 🟢 Init Userbase
+    userbase.init({ appId: '65a2e128-c1fe-412f-8d88-ea750827aca3' })
+
+    function signUp(username, password) {
+      userbase.signUp({ username, password, rememberMe: 'local' })
+        .then(() => {
+          alert('Signed up and logged in!');
+          showApp();
+        })
+        .catch(e => alert(e.message));
+    }
+
+    function login(username, password) {
+      userbase.signIn({ username, password, rememberMe: 'local' })
+        .then(() => {
+          alert('Logged in!');
+          showApp();
+        })
+        .catch(e => alert(e.message));
+    }
+
+    function logout() {
+      userbase.signOut()
+        .then(() => {
+          alert('Logged out');
+          showAuth();
+        })
+        .catch(e => alert(e.message));
+    }
+
+    function showApp() {
+      document.getElementById("auth-section").classList.add("hidden");
+      document.getElementById("app-section").classList.remove("hidden");
+    }
+
+    function showAuth() {
+      document.getElementById("auth-section").classList.remove("hidden");
+      document.getElementById("app-section").classList.add("hidden");
+    }
+
+    // 🎯 Strategy Generator
     async function generate() {
       const prompt = document.getElementById("prompt").value;
       document.getElementById("result").innerText = "Generating strategy...";
@@ -43,8 +134,14 @@
       });
 
       const data = await response.json();
-      document.getElementById("result").innerText = data.strategy || "Error generating strategy";
+      document.getElementById("result").innerText = data.strategy || "Error generating strategy.";
     }
+
+    // 🔁 Auto-login if already signed in
+    userbase.init({ appId: '65a2e128-c1fe-412f-8d88-ea750827aca3' }).then(session => {
+      if (session.user) showApp();
+    });
   </script>
+
 </body>
 </html>
